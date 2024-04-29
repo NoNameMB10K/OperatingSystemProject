@@ -1,0 +1,2 @@
+"depth", st_ino, st_mode, st_uid, st_size, st_blksize, file_name
+char *, long (%ld), int, int, long (%ld), long (%ld), char*

@@ -1,0 +1,6 @@
+*.elf
+.vscode/
+test_dir/
+IsolatedSpaceDirectory/
+FileSaverCache/
+build/
