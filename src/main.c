@@ -1,9 +1,11 @@
 #include <stdio.h>
 #include <string.h>
 #include<stdlib.h>
+#include <stdbool.h>
 
 #include "memory_checks.h"
 #include "path_dt.h"
+#include "dir_tracker.h"
 
 void set_flags(int argc, char *argv[], char **CACHE_DIR, int *start, int *end, char **ISOLATED_SPACE_DIR)
 {
@@ -76,8 +78,12 @@ int main(int argc, char *argv[])
 
     set_flags(argc, argv, &CACHE_DIR, &start, &end, &ISOLATED_SPACE_DIR);
     for(int i  = start; i < end; i ++)
-        make_path(argv[i]);
-    printf("iso dir=%s\ncahce dir = %s\n", ISOLATED_SPACE_DIR, CACHE_DIR);
-
+    {
+        bool exists;
+        Path_DT x = make_path(argv[i], &exists);
+        char *text = NULL;
+        get_snapshot(x, 0, INDENT, &text);
+        printf("[%s]\n", text);
+    }
     return 0;
 }

@@ -7,11 +7,15 @@
 #include "path_dt.h"
 #include "file_operations.h"
 
-Path_DT make_path(const char *path)
+Path_DT make_path(char *path, bool *exists)
 {
     Path_DT temp;
     temp.fileName[0] = '\0';
     temp.fullPath[0] = '\0';
+
+    int path_len = strlen(path);
+    if(path[path_len-1] == '/')
+        path[path_len - 1] = '\0';
 
     bool path_exists;
     temp.i_node = get_i_node(path, &path_exists);
@@ -19,6 +23,7 @@ Path_DT make_path(const char *path)
     if(!path_exists)
     {
         perror("given path does not exist");
+        *exists = false; 
         return temp;
     }
 
@@ -29,7 +34,7 @@ Path_DT make_path(const char *path)
         exit(EXIT_FAILURE);
     }
     
-    int pwd_len = strlen(pwd), path_len = strlen(path);
+    int pwd_len = strlen(pwd);
     char compare_aux[FULL_PATH_LENGHT];
     if(pwd_len < path_len)
     {
@@ -49,7 +54,34 @@ Path_DT make_path(const char *path)
     //from full path i get the name
     char *last_slash = strrchr(temp.fullPath, '/');
     strcpy(temp.fileName, last_slash);
-    
+
+    *exists = true;
+    return temp;
+}
+
+Path_DT make_subdir_path(Path_DT father, char *child_name)
+{
+    Path_DT temp;
+    strcpy(temp.fullPath, father.fullPath);
+    strcat(temp.fullPath, "/");
+    strcat(temp.fullPath, child_name);
+
+    printf("father:[%s]\nchild:[%s]\nch full:[%s]\n",
+    father.fullPath, child_name, temp.fullPath);
+
+    bool path_exists;
+    temp.i_node = get_i_node(temp.fullPath, &path_exists);
+
+    if(!path_exists)
+    {
+        perror("given path OF CHILD does not exist");
+        exit(EXIT_FAILURE);
+    }
+
+    //from full path i get the name
+    char *last_slash = strrchr(temp.fullPath, '/');
+    strcpy(temp.fileName, last_slash);
+
     return temp;
 }
 
@@ -58,5 +90,24 @@ void get_ino_string(Path_DT x, char *dest)
     char temp[10];
     sprintf(temp, "%ld", x.i_node.st_ino);
     strcpy(dest, temp);
+}
+
+void get_path_to_cache(Path_DT x, char *cache_dir, char *dest)
+{
+    int cache_dir_len = strlen(cache_dir);
+    if(cache_dir[cache_dir_len-1] == '/')
+        cache_dir[cache_dir_len - 1] = '\0';
+
+    char temp[FULL_PATH_LENGHT];
+    char ino[10];
+    get_ino_string(x, ino);
+
+    temp[0] = '\0';
+    strcpy(temp, cache_dir);
+    strcat(temp, "/");
+    strcat(temp, ino);
+    strcat(temp, ".csv");
+
+    strcpy (dest, temp);
 }
 
