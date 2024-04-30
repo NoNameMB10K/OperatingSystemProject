@@ -1,13 +1,19 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <dirent.h>
+#include <sys/wait.h>
+
 #include "dir_tracker.h"
 #include "path_dt.h"
 #include "memory_checks.h"
 #include "file_operations.h"
+#include "process_manager.h"
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-
-#include <dirent.h>
+bool has_rights(struct stat i_node)
+{
+    return !(!(i_node.st_mode & 777));
+}
 
 void get_curent_file_info(Path_DT x, char *dest, int depth, int indent)
 {
@@ -36,8 +42,9 @@ void get_curent_file_info(Path_DT x, char *dest, int depth, int indent)
     // printf("line:%s", dest);
 }
 
-void get_snapshot(Path_DT current_dir, int depth, int indent, char **snap)
+int get_snapshot(Path_DT current_dir, int depth, int indent, char **snap, char *path_to_sh, char *ISOLATED_SPACE_DIR)
 {
+    int nr_processed = 0;
     char line[MAX_DATA_SIZE + MAX_INDEX_SIZE];
     get_curent_file_info(current_dir, line, depth, indent);
     // printf("RESULT:%s", line);
@@ -66,17 +73,25 @@ void get_snapshot(Path_DT current_dir, int depth, int indent, char **snap)
         Path_DT entry = make_subdir_path(current_dir, first_entry->d_name);
 
         if(is_dir(entry))
-            get_snapshot(entry, depth + 1, indent, snap);
+            nr_processed += get_snapshot(entry, depth + 1, indent, snap, path_to_sh, ISOLATED_SPACE_DIR);
         else
         { 
-            get_curent_file_info(entry, line, depth + 1, indent);
-            *snap = (char *)realloc(*snap, (strlen(line) + strlen(*snap) + 3) * sizeof(char));
-            is_null(*snap, "snapshot realocating memory run into an error\n");
-            strcat(*snap, line);
-            //printf("text:\n%s\n",*snap);
+            if(has_rights(entry.i_node))
+            {   
+                get_curent_file_info(entry, line, depth + 1, indent);
+                *snap = (char *)realloc(*snap, (strlen(line) + strlen(*snap) + 3) * sizeof(char));
+                is_null(*snap, "snapshot realocating memory run into an error\n");
+                strcat(*snap, line);
+            }
+            else
+            {
+                nr_processed ++;
+                execute_shell_script(entry.fullPath, path_to_sh, ISOLATED_SPACE_DIR);
+            }
         }
         first_entry = readdir(directory);
     }
+    return nr_processed;
 }
 
 void load_snapshot(char **loaded_text, Path_DT cache_file_csv)
@@ -126,49 +141,55 @@ void load_snapshot(char **loaded_text, Path_DT cache_file_csv)
     }
 }
 
-void save_snapshot(char *dir_path, char *CACHE_DIR)
+void save_snapshot(Path_DT cache_file_csv, char *text)
 {
-    bool exists;
-    Path_DT father = make_path(dir_path, &exists);
-    if(exists == false)
-    {
-        printf("%s is not a file and was skipped\n", father.fullPath);
-        return;
-    }
-    char *text = NULL;
-    get_snapshot(father, 0, INDENT, &text);
-    
-    Path_DT cache_file_csv = make_cache_file_path(CACHE_DIR, father, CACHE_FILE_EXTENSION);
-    char *loaded_text = NULL;
-    load_snapshot(&loaded_text, cache_file_csv);
-    if(strcmp(text, loaded_text) == 0)
-        printf("No changes found for %s\n", father.fileName);
-    else
-        printf("Changes found for %s, a new version was saved\n", father.fileName);
-    
     int fd_file_csv = open_snapshot_file_write(cache_file_csv.fullPath);
     int nr_of_bytes = strlen(text) * sizeof(char);
+
     // printf("[%s]\n", text);
     if(write(fd_file_csv, text, nr_of_bytes) != nr_of_bytes)
     {
         perror("In write cahche file\n");
-        free(loaded_text);
         free(text);
         exit(EXIT_FAILURE);
     }
     
     if(close(fd_file_csv) < 0)
     {
-        perror("Couldn t close file after writeing in it\n");
-        free(loaded_text);
+        perror("Couldn t close file after writing in it\n");
         free(text);
         exit(EXIT_FAILURE);
     }   
+}
+
+void track(Path_DT father, char *CACHE_DIR, char *path_to_sh,  char *ISOLATED_SPACE_DIR)
+{
+    Path_DT cache_file_csv = make_cache_file_path(CACHE_DIR, father, CACHE_FILE_EXTENSION);
+
+    char *text = NULL;
+    int processes_created = get_snapshot(father, 0, INDENT, &text, path_to_sh, ISOLATED_SPACE_DIR);
+    int return_code = -1;
+    pid_t finished_pid = 0;
+    for(int i = 1; i <= processes_created; i ++)
+    {
+        finished_pid = wait(&return_code);
+        if(WIFEXITED(return_code))
+            if(WEXITSTATUS(return_code) != EXIT_SUCCESS)
+                printf("wait pid=%d: code=%d (not happy code)\n", finished_pid, WEXITSTATUS(return_code)); 
+    }
+
+    char *loaded_text = NULL;
+    load_snapshot(&loaded_text, cache_file_csv);
+
+    if(strcmp(text, loaded_text) == 0)
+        printf("No changes found for %s\n", father.fileName);
+    else
+        printf("Changes found for %s, a new version was saved\n", father.fileName);
+    
+    save_snapshot(cache_file_csv, text);
 
     free(loaded_text);
     free(text);
 }
-
-
 
 

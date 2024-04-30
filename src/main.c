@@ -2,14 +2,16 @@
 #include <string.h>
 #include<stdlib.h>
 #include <stdbool.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <sys/wait.h>
 
+#include "process_manager.h"
 #include "memory_checks.h"
-#include "path_dt.h"
-#include "dir_tracker.h"
 
-void set_flags(int argc, char *argv[], char **CACHE_DIR, int *start, int *end, char **ISOLATED_SPACE_DIR)
+void set_flags(int argc, char *argv[], char **CACHE_DIR, int *start, int *end, char **ISOLATED_SPACE_DIR, char **PATH_SH)
 {
-    int found_cahe_dir = 0, found_isolated_space_dir = 0;
+    int found_cahe_dir = 0, found_isolated_space_dir = 0, found_path_sh = 0;
     *start = -1;
     *end = -1;
     int before_first_flag = -1;
@@ -38,11 +40,27 @@ void set_flags(int argc, char *argv[], char **CACHE_DIR, int *start, int *end, c
             i ++;
         }
 
+       if(argv[i][1] == 'S' || argv[i][1] == 's') // -s -S flag
+        {
+            found_path_sh = 1;
+            *PATH_SH = (char *)malloc(strlen(argv[i + 1]) * sizeof(char)); 
+            is_null(*PATH_SH, ALOC_TEXT);
+            strcpy(*PATH_SH, argv[i + 1]);
+            i ++;
+        }
+
         if(*start != -1 && *end == -1)//found another flag aftre start, it s last index with  a dir
             *end = i - 1;
 
         if(argv[i][1] == 'd' || argv[i][1] == 'D') // -d -D flag
             *start = i + 1;
+    }
+
+    if(!found_path_sh)
+    {
+        *PATH_SH = (char *)malloc(25 * sizeof(char)); 
+        is_null(*PATH_SH, ALOC_TEXT);
+        strcpy(*PATH_SH, "verify_for_malicious.sh");
     }
 
     if(!found_cahe_dir)
@@ -75,12 +93,23 @@ int main(int argc, char *argv[])
     int start, end;// start < end
     char *CACHE_DIR = NULL; 
     char *ISOLATED_SPACE_DIR = NULL;
+    char *PATH_SH = NULL;
 
-    set_flags(argc, argv, &CACHE_DIR, &start, &end, &ISOLATED_SPACE_DIR);
+    set_flags(argc, argv, &CACHE_DIR, &start, &end, &ISOLATED_SPACE_DIR, &PATH_SH);
     for(int i  = start; i < end; i ++)
     {
-        printf("call [%s]\n", argv[i]);
-        save_snapshot(argv[i], CACHE_DIR);
+        generate_traking_process(argv[i], CACHE_DIR,PATH_SH, ISOLATED_SPACE_DIR);
     }
+
+    int return_code = -1;
+    pid_t finished_pid = 0;
+    for(int i = start; i < end; i ++)
+    {
+        finished_pid = wait(&return_code);
+        if(WIFEXITED(return_code))
+            if(WEXITSTATUS(return_code) != EXIT_SUCCESS)
+                printf("wait pid=%d: code=%d (not happy code)\n", finished_pid, WEXITSTATUS(return_code)); 
+    }
+
     return 0;
 }

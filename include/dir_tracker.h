@@ -8,7 +8,6 @@
     #define LOAD_CHUNK_SIZE 10
     
     #include "path_dt.h"
-    void get_curent_file_info(Path_DT x, char *dest, int depth, int indent);
-    void get_snapshot(Path_DT current_dir, int depth, int indent, char **snap);
-    void save_snapshot(char *dir_path, char *CACHE_DIR);
+    
+    void track(Path_DT father, char *CACHE_DIR, char *path_to_sh,  char *ISOLATED_SPACE_DIR);
 #endif
