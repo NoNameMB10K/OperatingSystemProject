@@ -18,4 +18,5 @@
     void get_ino_string(Path_DT x, char *dest);
     void get_path_to_cache(Path_DT x, char *cache_dir, char *dest);
     Path_DT make_subdir_path(Path_DT father, char *child_name);
+    Path_DT make_cache_file_path(char *CACHE_DIR, Path_DT father, char *cache_file_extension);
 #endif

@@ -11,6 +11,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+//pt open
+#include <fcntl.h>
 
 struct stat get_i_node(const char * path, bool * exists)
 {
@@ -29,7 +31,7 @@ DIR *open_director(Path_DT p)
     DIR *ans = opendir(p.fullPath);
     if(ans == NULL)
     {
-        printf("Directorul [%s] nu a putut sa fie deschis\n", p.fullPath);
+        perror("Directorul nu a putut sa fie deschis\n");
         exit(EXIT_FAILURE);
     }
     return ans;
@@ -43,4 +45,16 @@ bool is_dir(Path_DT path)
 bool is_link(Path_DT path)
 {   
     return S_ISLNK(path.i_node.st_mode);
+}
+
+int open_snapshot_file(char *p)
+{
+    //O_APPEND
+    int ans = open(p, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IXGRP);
+    if(ans < 0)
+    {
+        printf("Error opening a file .csv, func :open snapshot file\n");
+        exit(EXIT_FAILURE);
+    }
+    return  ans;
 }

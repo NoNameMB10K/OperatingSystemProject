@@ -22,7 +22,6 @@ Path_DT make_path(char *path, bool *exists)
 
     if(!path_exists)
     {
-        perror("given path does not exist");
         *exists = false; 
         return temp;
     }
@@ -66,8 +65,8 @@ Path_DT make_subdir_path(Path_DT father, char *child_name)
     strcat(temp.fullPath, "/");
     strcat(temp.fullPath, child_name);
 
-    printf("father:[%s]\nchild:[%s]\nch full:[%s]\n",
-    father.fullPath, child_name, temp.fullPath);
+    // printf("father:[%s]\nchild:[%s]\nch full:[%s]\n",
+    // father.fullPath, child_name, temp.fullPath);
 
     bool path_exists;
     temp.i_node = get_i_node(temp.fullPath, &path_exists);
@@ -84,6 +83,40 @@ Path_DT make_subdir_path(Path_DT father, char *child_name)
 
     return temp;
 }
+
+Path_DT make_cache_file_path(char *CACHE_DIR, Path_DT father, char *cache_file_extension)
+{
+    //make path to file
+    char  dir_path_to_save[FULL_PATH_LENGHT];
+    strcpy(dir_path_to_save, CACHE_DIR);
+    strcat(dir_path_to_save, "/");
+    char ino[10];
+    get_ino_string(father, ino);
+    strcat(dir_path_to_save, ino);
+    strcat(dir_path_to_save, cache_file_extension);
+    
+    bool exists;
+
+    //chck if cache dir exists
+    struct stat i_node = get_i_node(CACHE_DIR, &exists);
+    if(exists == false || S_ISDIR(i_node.st_mode) != 1)
+    {
+        printf("is dir:%d\ncahceDir:%s\n", S_ISDIR(i_node.st_mode), CACHE_DIR);
+        if(S_ISDIR(i_node.st_mode) != 0)
+            if(remove(CACHE_DIR) < 0)
+                perror("Cache was not a dir and couldn t be deleted\n");
+        mkdir(CACHE_DIR, 0700);
+    }   
+
+    Path_DT temp;
+    strcpy(temp.fullPath, dir_path_to_save);
+    temp.fileName[0] = '\0';
+
+    int fd_cache_file = open_snapshot_file(dir_path_to_save);
+
+    return temp;
+}
+
 
 void get_ino_string(Path_DT x, char *dest)
 {

@@ -79,11 +79,7 @@ int main(int argc, char *argv[])
     set_flags(argc, argv, &CACHE_DIR, &start, &end, &ISOLATED_SPACE_DIR);
     for(int i  = start; i < end; i ++)
     {
-        bool exists;
-        Path_DT x = make_path(argv[i], &exists);
-        char *text = NULL;
-        get_snapshot(x, 0, INDENT, &text);
-        printf("[%s]\n", text);
+        save_snapshot(argv[i], CACHE_DIR);
     }
     return 0;
 }

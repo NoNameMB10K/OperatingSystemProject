@@ -27,13 +27,12 @@ void get_curent_file_info(Path_DT x, char *dest, int depth, int indent)
     x.i_node.st_ino);
 
     strcat(dest, aux_read_data);
-    strcat(dest, x.fileName);
+    strcat(dest, x.fullPath);
     strcat(dest, "\n");
 }
 
 void get_snapshot(Path_DT current_dir, int depth, int indent, char **snap)
 {
-    int children_made = 0;
     char line[MAX_DATA_SIZE + MAX_INDEX_SIZE];
     get_curent_file_info(current_dir, line, depth, indent);
 
@@ -61,7 +60,7 @@ void get_snapshot(Path_DT current_dir, int depth, int indent, char **snap)
             get_snapshot(entry, depth + 1, indent, snap);
         else
         { 
-            get_curent_file_info(current_dir, line, depth, indent);
+            get_curent_file_info(entry, line, depth + 1, indent);
             if(*snap == NULL)
                 *snap = (char *)realloc(*snap, (strlen(line) + 3) * sizeof(char));
             else
@@ -73,7 +72,33 @@ void get_snapshot(Path_DT current_dir, int depth, int indent, char **snap)
     }
 }
 
+void save_snapshot(char *dir_path, char *CACHE_DIR)
+{
+    bool exists;
+    Path_DT father = make_path(dir_path, &exists);
+    if(exists == false)
+        return;
+    char *text = NULL;
+    get_snapshot(father, 0, INDENT, &text);
+    
+    Path_DT cache_file_csv = make_cache_file_path(CACHE_DIR, father, CACHE_FILE_EXTENSION);
 
+
+    int fd_file_csv = open_snapshot_file(cache_file_csv.fullPath);
+    int nr_of_bytes = strlen(text) * sizeof(char);
+    if(write(fd_file_csv, text, nr_of_bytes) != nr_of_bytes)
+    {
+        printf("nu  s o scris cat trebe/nu  so scris %s\n", cache_file_csv.fullPath);
+        perror("in write cahche file\n");
+        exit(EXIT_FAILURE);
+    }
+    
+    if(close(fd_file_csv) < 0)
+    {
+        perror("dupa ce s o scris in file nu s o inchis\n");
+        exit(EXIT_FAILURE);
+    }   
+}
 
 
 

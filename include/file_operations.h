@@ -8,4 +8,5 @@
     DIR *open_director(Path_DT p);
     bool is_dir(Path_DT path);
     bool is_link(Path_DT path);
+    int open_snapshot_file(char *p);
 #endif
