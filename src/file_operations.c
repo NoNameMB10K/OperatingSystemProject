@@ -47,13 +47,24 @@ bool is_link(Path_DT path)
     return S_ISLNK(path.i_node.st_mode);
 }
 
-int open_snapshot_file(char *p)
+int open_snapshot_file_write(char *p)
 {
     //O_APPEND
     int ans = open(p, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IXGRP);
     if(ans < 0)
     {
         printf("Error opening a file .csv, func :open snapshot file\n");
+        exit(EXIT_FAILURE);
+    }
+    return  ans;
+}
+
+int open_snapshot_file_read(char *p)
+{
+    int ans = open(p, O_RDONLY);
+    if(ans < 0)
+    {
+        perror("Error opening file csv fo loading data (in read mode)\n");
         exit(EXIT_FAILURE);
     }
     return  ans;

@@ -112,8 +112,6 @@ Path_DT make_cache_file_path(char *CACHE_DIR, Path_DT father, char *cache_file_e
     strcpy(temp.fullPath, dir_path_to_save);
     temp.fileName[0] = '\0';
 
-    int fd_cache_file = open_snapshot_file(dir_path_to_save);
-
     return temp;
 }
 
