@@ -18,6 +18,8 @@ void get_curent_file_info(Path_DT x, char *dest, int depth, int indent)
     }
     dest[depth * indent] = '\0';
 
+    // printf("line:[%s]\n", dest);
+
     char aux_read_data[MAX_DATA_SIZE];
 
     sprintf(aux_read_data, 
@@ -27,22 +29,29 @@ void get_curent_file_info(Path_DT x, char *dest, int depth, int indent)
     x.i_node.st_ino);
 
     strcat(dest, aux_read_data);
+    // printf("line:%s\n", dest);
     strcat(dest, x.fileName);
+    // printf("line:%s\n", dest);
     strcat(dest, "\n");
+    // printf("line:%s", dest);
 }
 
 void get_snapshot(Path_DT current_dir, int depth, int indent, char **snap)
 {
     char line[MAX_DATA_SIZE + MAX_INDEX_SIZE];
     get_curent_file_info(current_dir, line, depth, indent);
-
+    // printf("RESULT:%s", line);
     if(*snap == NULL)
+    {
         *snap = (char *)realloc(*snap, (strlen(line) + 3) * sizeof(char));
+        (*snap)[0] = '\0'; 
+    }
     else
         *snap = (char *)realloc(*snap, (strlen(line) + strlen(*snap) + 3) * sizeof(char));
     is_null(*snap, "snapshot realocating memory run into an error\n");
     strcat(*snap, line);
-    
+    // printf("result%s\n\n\n",*snap);
+
 
     DIR *directory = open_director(current_dir);
     struct dirent *first_entry = readdir(directory);
@@ -61,12 +70,10 @@ void get_snapshot(Path_DT current_dir, int depth, int indent, char **snap)
         else
         { 
             get_curent_file_info(entry, line, depth + 1, indent);
-            if(*snap == NULL)
-                *snap = (char *)realloc(*snap, (strlen(line) + 3) * sizeof(char));
-            else
-                *snap = (char *)realloc(*snap, (strlen(line) + strlen(*snap) + 3) * sizeof(char));
+            *snap = (char *)realloc(*snap, (strlen(line) + strlen(*snap) + 3) * sizeof(char));
             is_null(*snap, "snapshot realocating memory run into an error\n");
             strcat(*snap, line);
+            //printf("text:\n%s\n",*snap);
         }
         first_entry = readdir(directory);
     }
@@ -119,13 +126,15 @@ void load_snapshot(char **loaded_text, Path_DT cache_file_csv)
     }
 }
 
-
 void save_snapshot(char *dir_path, char *CACHE_DIR)
 {
     bool exists;
     Path_DT father = make_path(dir_path, &exists);
     if(exists == false)
+    {
+        printf("%s is not a file and was skipped\n", father.fullPath);
         return;
+    }
     char *text = NULL;
     get_snapshot(father, 0, INDENT, &text);
     
@@ -139,9 +148,10 @@ void save_snapshot(char *dir_path, char *CACHE_DIR)
     
     int fd_file_csv = open_snapshot_file_write(cache_file_csv.fullPath);
     int nr_of_bytes = strlen(text) * sizeof(char);
+    // printf("[%s]\n", text);
     if(write(fd_file_csv, text, nr_of_bytes) != nr_of_bytes)
     {
-        perror("in write cahche file\n");
+        perror("In write cahche file\n");
         free(loaded_text);
         free(text);
         exit(EXIT_FAILURE);
@@ -149,7 +159,7 @@ void save_snapshot(char *dir_path, char *CACHE_DIR)
     
     if(close(fd_file_csv) < 0)
     {
-        perror("dupa ce s o scris in file nu s o inchis\n");
+        perror("Couldn t close file after writeing in it\n");
         free(loaded_text);
         free(text);
         exit(EXIT_FAILURE);

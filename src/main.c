@@ -79,6 +79,7 @@ int main(int argc, char *argv[])
     set_flags(argc, argv, &CACHE_DIR, &start, &end, &ISOLATED_SPACE_DIR);
     for(int i  = start; i < end; i ++)
     {
+        printf("call [%s]\n", argv[i]);
         save_snapshot(argv[i], CACHE_DIR);
     }
     return 0;
