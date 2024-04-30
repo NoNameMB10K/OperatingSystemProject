@@ -5,7 +5,7 @@
     #define MAX_DATA_SIZE 1000
     #define MAX_INDEX_SIZE INDENT*10
     #define CACHE_FILE_EXTENSION ".csv"
-    #define LOAD_CHUNK_SIZE 10
+    #define LOAD_CHUNK_SIZE 100
     
     #include "path_dt.h"
     

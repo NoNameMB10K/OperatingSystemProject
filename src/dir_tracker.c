@@ -168,6 +168,7 @@ void track(Path_DT father, char *CACHE_DIR, char *path_to_sh,  char *ISOLATED_SP
 
     char *text = NULL;
     int processes_created = get_snapshot(father, 0, INDENT, &text, path_to_sh, ISOLATED_SPACE_DIR);
+  
     int return_code = -1;
     pid_t finished_pid = 0;
     for(int i = 1; i <= processes_created; i ++)
@@ -184,7 +185,9 @@ void track(Path_DT father, char *CACHE_DIR, char *path_to_sh,  char *ISOLATED_SP
     if(strcmp(text, loaded_text) == 0)
         printf("No changes found for %s\n", father.fileName);
     else
+    {
         printf("Changes found for %s, a new version was saved\n", father.fileName);
+    }
     
     save_snapshot(cache_file_csv, text);
 

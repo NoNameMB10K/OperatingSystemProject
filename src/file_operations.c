@@ -50,7 +50,7 @@ bool is_link(Path_DT path)
 int open_snapshot_file_write(char *p)
 {
     //O_APPEND
-    int ans = open(p, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IXGRP);
+    int ans = open(p, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IXGRP);
     if(ans < 0)
     {
         printf("Error opening a file .csv, func :open snapshot file\n");
