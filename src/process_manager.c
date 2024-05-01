@@ -1,3 +1,4 @@
+#include <string.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,17 +32,56 @@ void generate_traking_process(char *dir_path, char *CACHE_DIR, char *path_to_sh,
     }
 }
 
-void execute_shell_script(char *path_file_with_no_rights, char *path_to_sh_script, char *ISOLATED_SPACE_DIR)
+void execute_shell_script(char *path_file_with_no_rights, char *name_file, char *path_to_sh_script, char *ISOLATED_SPACE_DIR)
 {
+
+    int pfd[2];
+	if(pipe(pfd)<0)
+	{
+	  perror("Eroare la crearea pipe-ului\n");
+	  exit(1);
+	}
+
     pid_t pid_process = fork();
     if(pid_process == 0)//sunt in copil
     {
+        close(pfd[0]);/* inchide capatul de citire; */
+        //write(pfd[1],buff,len);
+        dup2(pfd[1],1);
         execl(path_to_sh_script, "FS", path_file_with_no_rights, ISOLATED_SPACE_DIR,(char *)NULL);
+        
+        close(pfd[1]);
         perror("Exec didn t overwrite\n");
         exit(EXIT_FAILURE);
     }
     else //sunt in parinte
     {
+        close(pfd[1]); /* inchide capatul de scriere; */
+        
+        char response[FULL_PATH_LENGHT];
+        read(pfd[0], response, FULL_PATH_LENGHT);
+        // printf("RESPONSE: [%s]\n", response);
+
+        if(strcmp(response, "SAFE\n") != 0)
+        {
+            // printf("NSFW %s\n", name_file);
+            char dest[FULL_PATH_LENGHT];
+            strcpy(dest, ISOLATED_SPACE_DIR);
+            strcat(dest, name_file);
+
+            if (rename(path_file_with_no_rights, dest) != 0) {
+                if (remove(path_file_with_no_rights) != 0) {
+                    perror("Error deleting original file");
+                    exit(EXIT_FAILURE);
+                }
+                perror("Error moving file");
+                exit(EXIT_FAILURE);
+            }
+        }
+        // else
+        //     printf("it s actually safe %s\n", name_file);
+        
+        close(pfd[0]);
         return;
     }
 }

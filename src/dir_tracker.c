@@ -86,7 +86,7 @@ int get_snapshot(Path_DT current_dir, int depth, int indent, char **snap, char *
             else
             {
                 nr_processed ++;
-                execute_shell_script(entry.fullPath, path_to_sh, ISOLATED_SPACE_DIR);
+                execute_shell_script(entry.fullPath, entry.fileName, path_to_sh, ISOLATED_SPACE_DIR);
             }
         }
         first_entry = readdir(directory);

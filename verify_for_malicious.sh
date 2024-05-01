@@ -25,19 +25,17 @@ nr_of_char=$(wc -m < "$path")
 
 while read -n1 char; do
     if [ "$(printf '%d' "'$char")" -gt 127 ]; then
-        # mv "$path" "$safe_dir"
-        echo "'$path'"
+        echo "$path"
         exit 0
     fi
 done < "$path"
 
 while IFS= read -r word; do
     if [[ "$word" == *"malicious"* || "$word" == *"risk"* || "$word" == *"attack"* ]]; then
-        # mv "$path" "$safe_dir"
-        echo "'$path'"
+        echo "$path"
         exit 0
     fi
 done < <(tr -cs '[:alnum:]' '\n' < "$path")
 
 echo "SAFE"
-exis 0
+exit 0

@@ -9,6 +9,11 @@
 #include "process_manager.h"
 #include "memory_checks.h"
 
+
+/*
+TO DO
+de tratat erori la fork
+*/
 void set_flags(int argc, char *argv[], char **CACHE_DIR, int *start, int *end, char **ISOLATED_SPACE_DIR, char **PATH_SH)
 {
     int found_cahe_dir = 0, found_isolated_space_dir = 0, found_path_sh = 0;
