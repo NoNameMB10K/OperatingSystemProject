@@ -7,8 +7,6 @@ fi
 
 path="$1"
 safe_dir="$2"
-# echo "path:$path."
-# echo "safe dir:$safe_dir."
 
 if [ ! -f "$path" ]; then
     echo "Error: File '$path' does not exist."
@@ -17,13 +15,29 @@ fi
 
 chmod 777 "$path"
 
+nr_of_words=$(wc -w < "$path")
+nr_of_lines=$(wc -l < "$path")
+nr_of_char=$(wc -m < "$path")
+
+# echo "Number of words: $nr_of_words"
+# echo "Number of lines: $nr_of_lines"
+# echo "Number of characters: $nr_of_char"
+
 while read -n1 char; do
     if [ "$(printf '%d' "'$char")" -gt 127 ]; then
-        echo "Malicous file detected '$path'."
-        mv "$path" "$safe_dir"
+        # mv "$path" "$safe_dir"
+        echo "'$path'"
         exit 0
     fi
 done < "$path"
 
-echo "No characters with ASCII code > 127 found in the file '$path'."
+while IFS= read -r word; do
+    if [[ "$word" == *"malicious"* || "$word" == *"risk"* || "$word" == *"attack"* ]]; then
+        # mv "$path" "$safe_dir"
+        echo "'$path'"
+        exit 0
+    fi
+done < <(tr -cs '[:alnum:]' '\n' < "$path")
+
+echo "SAFE"
 exis 0
