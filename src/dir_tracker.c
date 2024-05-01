@@ -42,7 +42,7 @@ void get_curent_file_info(Path_DT x, char *dest, int depth, int indent)
     // printf("line:%s", dest);
 }
 
-int get_snapshot(Path_DT current_dir, int depth, int indent, char **snap, char *path_to_sh, char *ISOLATED_SPACE_DIR)
+int get_snapshot(Path_DT current_dir, int depth, int indent, char **snap, char *path_to_sh, char *ISOLATED_SPACE_DIR, int *actual_viruses)
 {
     int nr_processed = 0;
     char line[MAX_DATA_SIZE + MAX_INDEX_SIZE];
@@ -73,7 +73,7 @@ int get_snapshot(Path_DT current_dir, int depth, int indent, char **snap, char *
         Path_DT entry = make_subdir_path(current_dir, first_entry->d_name);
 
         if(is_dir(entry))
-            nr_processed += get_snapshot(entry, depth + 1, indent, snap, path_to_sh, ISOLATED_SPACE_DIR);
+            nr_processed += get_snapshot(entry, depth + 1, indent, snap, path_to_sh, ISOLATED_SPACE_DIR, actual_viruses);
         else
         { 
             if(has_rights(entry.i_node))
@@ -86,7 +86,7 @@ int get_snapshot(Path_DT current_dir, int depth, int indent, char **snap, char *
             else
             {
                 nr_processed ++;
-                execute_shell_script(entry.fullPath, entry.fileName, path_to_sh, ISOLATED_SPACE_DIR);
+                (*actual_viruses) += execute_shell_script(entry.fullPath, entry.fileName, path_to_sh, ISOLATED_SPACE_DIR);
             }
         }
         first_entry = readdir(directory);
@@ -167,7 +167,8 @@ void track(Path_DT father, char *CACHE_DIR, char *path_to_sh,  char *ISOLATED_SP
     Path_DT cache_file_csv = make_cache_file_path(CACHE_DIR, father, CACHE_FILE_EXTENSION);
 
     char *text = NULL;
-    int processes_created = get_snapshot(father, 0, INDENT, &text, path_to_sh, ISOLATED_SPACE_DIR);
+    int actual_viruses = 0;
+    int processes_created = get_snapshot(father, 0, INDENT, &text, path_to_sh, ISOLATED_SPACE_DIR, &actual_viruses);
   
     int return_code = -1;
     pid_t finished_pid = 0;
@@ -178,15 +179,15 @@ void track(Path_DT father, char *CACHE_DIR, char *path_to_sh,  char *ISOLATED_SP
             if(WEXITSTATUS(return_code) != EXIT_SUCCESS)
                 printf("wait pid=%d: code=%d (not happy code)\n", finished_pid, WEXITSTATUS(return_code)); 
     }
-
     char *loaded_text = NULL;
     load_snapshot(&loaded_text, cache_file_csv);
-
     if(strcmp(text, loaded_text) == 0)
-        printf("No changes found for %s\n", father.fileName);
+        printf("No changes found for %s\nWere found %d suspicious files:%d were viruses\n",
+        father.fileName, processes_created, actual_viruses);
     else
     {
-        printf("Changes found for %s, a new version was saved\n", father.fileName);
+        printf("Changes found for %s, a new version was saved\nWere found %d suspicious files:%d were viruses\n",
+        father.fileName, processes_created, actual_viruses);
     }
     
     save_snapshot(cache_file_csv, text);

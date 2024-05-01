@@ -32,7 +32,7 @@ void generate_traking_process(char *dir_path, char *CACHE_DIR, char *path_to_sh,
     }
 }
 
-void execute_shell_script(char *path_file_with_no_rights, char *name_file, char *path_to_sh_script, char *ISOLATED_SPACE_DIR)
+int execute_shell_script(char *path_file_with_no_rights, char *name_file, char *path_to_sh_script, char *ISOLATED_SPACE_DIR)
 {
 
     int pfd[2];
@@ -59,8 +59,11 @@ void execute_shell_script(char *path_file_with_no_rights, char *name_file, char 
         close(pfd[1]); /* inchide capatul de scriere; */
         
         char response[FULL_PATH_LENGHT];
+        for(int i = 0; i < FULL_PATH_LENGHT; i ++)//fara asta citeste garbage din read
+            response[i] = '\0';
+        
         read(pfd[0], response, FULL_PATH_LENGHT);
-        // printf("RESPONSE: [%s]\n", response);
+        //printf("RESPONSE: [%s]\nresp nel=%ld\n", response, strlen(response));
 
         if(strcmp(response, "SAFE\n") != 0)
         {
@@ -77,11 +80,14 @@ void execute_shell_script(char *path_file_with_no_rights, char *name_file, char 
                 perror("Error moving file");
                 exit(EXIT_FAILURE);
             }
+            return 1;
         }
-        // else
-        //     printf("it s actually safe %s\n", name_file);
+        else
+        {
+            return 0;
+            //printf("e ok\n");
+        }
         
         close(pfd[0]);
-        return;
     }
 }

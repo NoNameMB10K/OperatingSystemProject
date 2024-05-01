@@ -37,5 +37,7 @@ while IFS= read -r word; do
     fi
 done < <(tr -cs '[:alnum:]' '\n' < "$path")
 
+chmod 000 "$path"
+
 echo "SAFE"
 exit 0
