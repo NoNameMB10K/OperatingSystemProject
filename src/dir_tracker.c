@@ -9,6 +9,7 @@
 #include "memory_checks.h"
 #include "file_operations.h"
 #include "process_manager.h"
+#include "list.h"
 
 bool has_rights(struct stat i_node)
 {
@@ -42,7 +43,7 @@ void get_curent_file_info(Path_DT x, char *dest, int depth, int indent)
     // printf("line:%s", dest);
 }
 
-int get_snapshot(Path_DT current_dir, int depth, int indent, char **snap, char *path_to_sh, char *ISOLATED_SPACE_DIR, int *actual_viruses)
+int get_snapshot(Path_DT current_dir, int depth, int indent, char **snap, char *path_to_sh, char *ISOLATED_SPACE_DIR, Node **head)
 {
     int nr_processed = 0;
     char line[MAX_DATA_SIZE + MAX_INDEX_SIZE];
@@ -73,7 +74,7 @@ int get_snapshot(Path_DT current_dir, int depth, int indent, char **snap, char *
         Path_DT entry = make_subdir_path(current_dir, first_entry->d_name);
 
         if(is_dir(entry))
-            nr_processed += get_snapshot(entry, depth + 1, indent, snap, path_to_sh, ISOLATED_SPACE_DIR, actual_viruses);
+            nr_processed += get_snapshot(entry, depth + 1, indent, snap, path_to_sh, ISOLATED_SPACE_DIR, head);
         else
         { 
             if(has_rights(entry.i_node))
@@ -86,7 +87,9 @@ int get_snapshot(Path_DT current_dir, int depth, int indent, char **snap, char *
             else
             {
                 nr_processed ++;
-                (*actual_viruses) += execute_shell_script(entry.fullPath, entry.fileName, path_to_sh, ISOLATED_SPACE_DIR);
+                int reading_pipe = 0;
+                execute_shell_script(entry.fullPath, entry.fileName, path_to_sh, ISOLATED_SPACE_DIR, &reading_pipe);
+                insert_data(head, reading_pipe, 0, "");
             }
         }
         first_entry = readdir(directory);
@@ -166,10 +169,54 @@ void track(Path_DT father, char *CACHE_DIR, char *path_to_sh,  char *ISOLATED_SP
 {
     Path_DT cache_file_csv = make_cache_file_path(CACHE_DIR, father, CACHE_FILE_EXTENSION);
 
+    Node *head = NULL;
     char *text = NULL;
     int actual_viruses = 0;
-    int processes_created = get_snapshot(father, 0, INDENT, &text, path_to_sh, ISOLATED_SPACE_DIR, &actual_viruses);
-  
+    int processes_created = get_snapshot(father, 0, INDENT, &text, path_to_sh, ISOLATED_SPACE_DIR, &head);
+    
+
+    //read from pipes
+    Node *son = head;
+    while(son != NULL)
+    {
+        char response[FULL_PATH_LENGHT];
+        
+        int nr_of_read_bytes = read(son->read_int_pipe, response, FULL_PATH_LENGHT);
+        response[nr_of_read_bytes - 1] = '\0';// -1 pt ca eu trimit "string\n"
+        if(nr_of_read_bytes < 0)
+            exit(EXIT_FAILURE);
+            
+        // printf("RESPONSE: [%s]\nresp len=%ld\n", response, strlen(response));
+
+        if(strcmp(response, "SAFE") != 0)
+        {
+            // printf("NSFW %s\n", name_file);
+            char dest[FULL_PATH_LENGHT];
+            strcpy(dest, ISOLATED_SPACE_DIR);
+
+            char *last_slash = strrchr(response, '/');
+            char name_file[100];
+            strcpy(name_file, last_slash);
+            strcat(dest, name_file);
+
+            if (rename(response, dest) != 0) { 
+                if (remove(response) != 0) {
+                    perror("Error deleting original file");
+                    exit(EXIT_FAILURE);
+                }
+                perror("Error moving file");
+                exit(EXIT_FAILURE);
+            }
+            actual_viruses ++;
+        }
+        
+        close(son->read_int_pipe);
+
+        son = son ->next;
+    }
+    
+
+    //wait for processes to finish
     int return_code = -1;
     pid_t finished_pid = 0;
     for(int i = 1; i <= processes_created; i ++)
@@ -179,6 +226,7 @@ void track(Path_DT father, char *CACHE_DIR, char *path_to_sh,  char *ISOLATED_SP
             if(WEXITSTATUS(return_code) != EXIT_SUCCESS)
                 printf("wait pid=%d: code=%d (not happy code)\n", finished_pid, WEXITSTATUS(return_code)); 
     }
+
     char *loaded_text = NULL;
     load_snapshot(&loaded_text, cache_file_csv);
     if(strcmp(text, loaded_text) == 0)
