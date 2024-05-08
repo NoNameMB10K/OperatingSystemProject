@@ -7,7 +7,7 @@
 #include <sys/wait.h>
 
 #include "process_manager.h"
-#include "memory_checks.h"
+#include "error_checks.h"
 
 
 /*

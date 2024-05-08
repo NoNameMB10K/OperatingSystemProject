@@ -6,7 +6,7 @@
 
 #include "dir_tracker.h"
 #include "path_dt.h"
-#include "memory_checks.h"
+#include "error_checks.h"
 #include "file_operations.h"
 #include "process_manager.h"
 #include "list.h"
@@ -169,14 +169,14 @@ void track(Path_DT father, char *CACHE_DIR, char *path_to_sh,  char *ISOLATED_SP
 {
     Path_DT cache_file_csv = make_cache_file_path(CACHE_DIR, father, CACHE_FILE_EXTENSION);
 
-    Node *head = NULL;
+    Node *head_pipes_list = NULL;
     char *text = NULL;
     int actual_viruses = 0;
-    int processes_created = get_snapshot(father, 0, INDENT, &text, path_to_sh, ISOLATED_SPACE_DIR, &head);
+    int processes_created = get_snapshot(father, 0, INDENT, &text, path_to_sh, ISOLATED_SPACE_DIR, &head_pipes_list);
     
 
     //read from pipes
-    Node *son = head;
+    Node *son = head_pipes_list;
     while(son != NULL)
     {
         char response[FULL_PATH_LENGHT];
@@ -214,7 +214,7 @@ void track(Path_DT father, char *CACHE_DIR, char *path_to_sh,  char *ISOLATED_SP
 
         son = son ->next;
     }
-    
+    free_list(&head_pipes_list);
 
     //wait for processes to finish
     int return_code = -1;

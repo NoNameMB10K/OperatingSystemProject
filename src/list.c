@@ -3,7 +3,7 @@
 #include <string.h>
 
 #include "list.h"
-#include "memory_checks.h"
+#include "error_checks.h"
 
 
 Node* create_node(int read_int_pipe, int pid, const char* text)
