@@ -119,7 +119,7 @@ int main(int argc, char *argv[])
                 finished_pid = wait(&return_code);
                 if(WIFEXITED(return_code))
                     if(WEXITSTATUS(return_code) != EXIT_SUCCESS)
-                        printf("wait pid=%d: code=%d (not happy code)\n", finished_pid, WEXITSTATUS(return_code)); 
+                        printf("wait pid=%d: code=%d (not successfuly)\n", finished_pid, WEXITSTATUS(return_code)); 
             }
         }
     }

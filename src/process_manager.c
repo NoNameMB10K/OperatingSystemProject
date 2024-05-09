@@ -18,7 +18,7 @@ int generate_traking_process(char *dir_path, char *CACHE_DIR, char *path_to_sh, 
     Path_DT father = make_path(dir_path, &exists);
     if(exists == false || is_link(father))
     {
-        printf("%s is not a file and was skipped\n", father.fullPath);
+        printf("%s is not a file and was skipped\n\n", father.fullPath);
         return 0;
     }
 

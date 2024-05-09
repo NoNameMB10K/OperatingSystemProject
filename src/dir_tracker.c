@@ -218,11 +218,11 @@ void track(Path_DT father, char *CACHE_DIR, char *path_to_sh,  char *ISOLATED_SP
     char *loaded_text = NULL;
     load_snapshot(&loaded_text, cache_file_csv);
     if(strcmp(text, loaded_text) == 0)
-        printf("No changes found for %s\nWere found %d suspicious files:%d were viruses\n",
+        printf("No changes found for %s\nWere found %d suspicious files:%d were viruses\n\n",
         father.fileName, processes_created, actual_viruses);
     else
     {
-        printf("Changes found for %s, a new version was saved\nWere found %d suspicious files:%d were viruses\n",
+        printf("Changes found for %s, a new version was saved\nWere found %d suspicious files:%d were viruses\n\n",
         father.fileName, processes_created, actual_viruses);
     }
     
