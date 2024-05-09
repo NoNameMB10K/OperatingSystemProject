@@ -30,10 +30,10 @@ void get_curent_file_info(Path_DT x, char *dest, int depth, int indent)
     char aux_read_data[MAX_DATA_SIZE];
 
     sprintf(aux_read_data, 
-    ", %ld, %d, %d, %ld, %ld, ",
+    ", %ld, %d, %d, %ld, %ld, %ld,",
     x.i_node.st_ino, x.i_node.st_mode,
     x.i_node.st_uid, x.i_node.st_size,
-    x.i_node.st_ino);
+    x.i_node.st_blksize, x.i_node.st_mtime);
 
     strcat(dest, aux_read_data);
     // printf("line:%s\n", dest);
