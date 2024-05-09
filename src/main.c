@@ -9,7 +9,7 @@
 #include "process_manager.h"
 #include "error_checks.h"
 
-#define MAX_NR_THREADS 1
+#define MAX_NR_THREADS 10
 
 /*
 TO DO
