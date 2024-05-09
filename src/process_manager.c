@@ -12,14 +12,14 @@
 #include "error_checks.h"
 #include "file_operations.h"
 
-void generate_traking_process(char *dir_path, char *CACHE_DIR, char *path_to_sh, char *ISOLATED_SPACE_DIR)
+int generate_traking_process(char *dir_path, char *CACHE_DIR, char *path_to_sh, char *ISOLATED_SPACE_DIR)
 {
     bool exists;
     Path_DT father = make_path(dir_path, &exists);
     if(exists == false || is_link(father))
     {
         printf("%s is not a file and was skipped\n", father.fullPath);
-        return;
+        return 0;
     }
 
     pid_t pid_process = fork();
@@ -31,7 +31,7 @@ void generate_traking_process(char *dir_path, char *CACHE_DIR, char *path_to_sh,
     }
     else //sunt in parinte
     {
-        return;
+        return 1;
     }
 }
 

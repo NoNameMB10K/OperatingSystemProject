@@ -9,6 +9,7 @@
 #include "process_manager.h"
 #include "error_checks.h"
 
+#define MAX_NR_THREADS 1
 
 /*
 TO DO
@@ -101,19 +102,26 @@ int main(int argc, char *argv[])
     char *PATH_SH = NULL;
 
     set_flags(argc, argv, &CACHE_DIR, &start, &end, &ISOLATED_SPACE_DIR, &PATH_SH);
-    for(int i  = start; i < end; i ++)
-    {
-        generate_traking_process(argv[i], CACHE_DIR,PATH_SH, ISOLATED_SPACE_DIR);
-    }
 
-    int return_code = -1;
-    pid_t finished_pid = 0;
-    for(int i = start; i < end; i ++)
+    int index_arg = start;
+    int live_processes = 0;
+    while(index_arg < end)
     {
-        finished_pid = wait(&return_code);
-        if(WIFEXITED(return_code))
-            if(WEXITSTATUS(return_code) != EXIT_SUCCESS)
-                printf("wait pid=%d: code=%d (not happy code)\n", finished_pid, WEXITSTATUS(return_code)); 
+        live_processes += generate_traking_process(argv[index_arg], CACHE_DIR,PATH_SH, ISOLATED_SPACE_DIR);
+        index_arg ++;
+
+        if(live_processes >= MAX_NR_THREADS || index_arg >= end)
+        {
+            int return_code = -1;
+            pid_t finished_pid = 0;
+            for(int i = start; i < end; i ++)
+            {
+                finished_pid = wait(&return_code);
+                if(WIFEXITED(return_code))
+                    if(WEXITSTATUS(return_code) != EXIT_SUCCESS)
+                        printf("wait pid=%d: code=%d (not happy code)\n", finished_pid, WEXITSTATUS(return_code)); 
+            }
+        }
     }
 
     return 0;
