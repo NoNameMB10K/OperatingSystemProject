@@ -6,6 +6,7 @@
 
 #include "path_dt.h"
 #include "file_operations.h"
+#include "error_checks.h"
 
 Path_DT make_path(char *path, bool *exists)
 {
@@ -105,8 +106,7 @@ Path_DT make_cache_file_path(char *CACHE_DIR, Path_DT father, char *cache_file_e
     {
         //printf("is dir:%d\ncahceDir:%s\n", S_ISDIR(i_node.st_mode), CACHE_DIR);
         if(S_ISDIR(i_node.st_mode) != 1 && exists == true)
-            if(remove(CACHE_DIR) < 0)
-                perror("Cache was not a dir and couldn t be deleted\n");
+            is_lt_zero(remove(CACHE_DIR), "Cache was not a dir and couldn t be deleted\n");
         mkdir(CACHE_DIR, 0700);
     }   
 
@@ -116,11 +116,9 @@ Path_DT make_cache_file_path(char *CACHE_DIR, Path_DT father, char *cache_file_e
     {
         //printf("is file:%d\ncahceFile:%s\n", S_ISREG(i_node.st_mode), dir_path_to_save);
         if(S_ISREG(i_node.st_mode) != 1 && exists == true)
-            if(remove(dir_path_to_save) < 0)
-                perror("Cache file was not a file and couldn t be deleted\n");
+            is_lt_zero(remove(dir_path_to_save), "Cache file was not a file and couldn t be deleted\n");
         int fd= open_snapshot_file_write(dir_path_to_save);
-        if(close(fd) < 0)
-            perror("Couldn t propperly close file.csv\n"); 
+        is_lt_zero(fd,"Couldn t propperly close file.csv\n"); 
     }  
 
     Path_DT temp;

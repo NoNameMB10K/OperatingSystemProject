@@ -1,4 +1,5 @@
 #include "file_operations.h"
+#include "error_checks.h"
 
 #include <stdio.h>
 #include<errno.h>
@@ -51,21 +52,13 @@ int open_snapshot_file_write(char *p)
 {
     //O_APPEND
     int ans = open(p, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IXGRP);
-    if(ans < 0)
-    {
-        printf("Error opening a file .csv, func :open snapshot file\n");
-        exit(EXIT_FAILURE);
-    }
+    is_lt_zero(ans,"Error opening a file .csv, func :open snapshot file\n");
     return  ans;
 }
 
 int open_snapshot_file_read(char *p)
 {
     int ans = open(p, O_RDONLY);
-    if(ans < 0)
-    {
-        perror("Error opening file csv fo loading data (in read mode)\n");
-        exit(EXIT_FAILURE);
-    }
+    is_lt_zero(ans,"Error opening file csv fo loading data (in read mode)\n");
     return  ans;
 }

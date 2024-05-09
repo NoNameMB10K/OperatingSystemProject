@@ -121,13 +121,10 @@ void load_snapshot(char **loaded_text, Path_DT cache_file_csv)
         text = temp1;
         read_status = read(fd_file_csv, chunk, LOAD_CHUNK_SIZE);
     }
-    if(read_status < 0)
-    {
-        perror("Error during loading data from file.csv\n");
-        free(chunk);
-        free(text);
-        exit(EXIT_FAILURE);
-    }
+    is_lt_zero(read_status, "Error during loading data from file.csv\n");
+        // free(chunk);
+        // free(text);
+
     if(read_status < LOAD_CHUNK_SIZE)
     {
         chunk[read_status] = '\0';
@@ -136,12 +133,9 @@ void load_snapshot(char **loaded_text, Path_DT cache_file_csv)
     free(chunk);
     *loaded_text = text;
 
-    if(close(fd_file_csv) < 0)
-    {
-        perror("Couldn t close file.csv after loading data\n");
-        free(text);
-        exit(EXIT_FAILURE);
-    }
+
+    is_lt_zero(fd_file_csv, "Couldn t close file.csv after loading data\n");
+        // free(text);
 }
 
 void save_snapshot(Path_DT cache_file_csv, char *text)
@@ -156,13 +150,8 @@ void save_snapshot(Path_DT cache_file_csv, char *text)
         free(text);
         exit(EXIT_FAILURE);
     }
-    
-    if(close(fd_file_csv) < 0)
-    {
-        perror("Couldn t close file after writing in it\n");
-        free(text);
-        exit(EXIT_FAILURE);
-    }   
+    is_lt_zero(fd_file_csv, "Couldn t close file after writing in it\n");
+        // free(text);
 }
 
 void track(Path_DT father, char *CACHE_DIR, char *path_to_sh,  char *ISOLATED_SPACE_DIR)
@@ -183,8 +172,7 @@ void track(Path_DT father, char *CACHE_DIR, char *path_to_sh,  char *ISOLATED_SP
         
         int nr_of_read_bytes = read(son->read_int_pipe, response, FULL_PATH_LENGHT);
         response[nr_of_read_bytes - 1] = '\0';// -1 pt ca eu trimit "string\n"
-        if(nr_of_read_bytes < 0)
-            exit(EXIT_FAILURE);
+        is_lt_zero(nr_of_read_bytes, "Error while communicating with sh trough pipe\n");
             
         // printf("RESPONSE: [%s]\nresp len=%ld\n", response, strlen(response));
 

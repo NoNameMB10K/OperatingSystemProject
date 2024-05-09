@@ -4,5 +4,5 @@
     #define REALOC_TEXT "reallocating  memory error"
 
     void is_null(void* ptr, const char *text);
-
+    void is_lt_zero(int test_val, const char *text);
 #endif

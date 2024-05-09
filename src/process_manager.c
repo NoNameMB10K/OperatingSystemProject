@@ -9,6 +9,7 @@
 
 #include "path_dt.h"
 #include "dir_tracker.h"
+#include "error_checks.h"
 
 void generate_traking_process(char *dir_path, char *CACHE_DIR, char *path_to_sh, char *ISOLATED_SPACE_DIR)
 {
@@ -21,6 +22,7 @@ void generate_traking_process(char *dir_path, char *CACHE_DIR, char *path_to_sh,
     }
 
     pid_t pid_process = fork();
+    is_lt_zero(pid_process, "Traking process fork failed\n");
     if(pid_process == 0)//sunt in copil
     {
         track(father, CACHE_DIR, path_to_sh, ISOLATED_SPACE_DIR);
@@ -36,13 +38,11 @@ void execute_shell_script(char *path_file_with_no_rights, char *name_file, char 
 {
 
     int pfd[2];
-	if(pipe(pfd)<0)
-	{
-	  perror("Eroare la crearea pipe-ului\n");
-	  exit(1);
-	}
+    is_lt_zero(pipe(pfd), "Pipe couldn t be created\n");
+
 
     pid_t pid_process = fork();
+    is_lt_zero(pid_process, "Executing sh failed\n");
     if(pid_process == 0)//sunt in copil
     {
         close(pfd[0]);/* inchide capatul de citire; */
