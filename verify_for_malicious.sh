@@ -22,6 +22,7 @@ nr_of_char=$(wc -m < "$path")
 
 if [ $nr_of_lines -ge 3 ] || [ $nr_of_words -le 1000 ] || [ $nr_of_char -le 2000 ]; then
     echo "SAFE"
+    chmod 000 "$path"
     exit 0
 fi
 
