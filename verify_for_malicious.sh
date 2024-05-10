@@ -19,16 +19,18 @@ nr_of_words=$(wc -w < "$path")
 nr_of_lines=$(wc -l < "$path")
 nr_of_char=$(wc -m < "$path")
 
-# echo "Number of words: $nr_of_words"
-# echo "Number of lines: $nr_of_lines"
-# echo "Number of characters: $nr_of_char"
 
-while read -n1 char; do
-    if [ "$(printf '%d' "'$char")" -gt 127 ]; then
-        echo "$path"
-        exit 0
-    fi
-done < "$path"
+if [ $nr_of_lines -ge 3 ] || [ $nr_of_words -le 1000 ] || [ $nr_of_char -le 2000 ]; then
+    echo "SAFE"
+    exit 0
+fi
+
+
+if grep -qP "[^\x80-\xFF]" "$1"; then
+    echo "$path"
+    exit 0
+fi
+
 
 if grep -q -E '\b(malicious|risk|attack)\b' "$path"; then
     echo "$path"

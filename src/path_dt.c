@@ -29,30 +29,38 @@ Path_DT make_path(char *path, bool *exists)
         return temp;
     }
 
-    char pwd[FULL_PATH_LENGHT];
-    if (getcwd(pwd, FULL_PATH_LENGHT) == NULL)
+    if(path[0] == '/')
     {
-        perror("couldn t get pwd");
-        exit(EXIT_FAILURE);
-    }
-    
-    int pwd_len = strlen(pwd);
-    char compare_aux[FULL_PATH_LENGHT];
-    if(pwd_len < path_len)
-    {
-        strncpy(compare_aux, path, pwd_len);
-        compare_aux[pwd_len] = '\0';
+        strcpy(temp.fullPath, path);
     }
     else
-        compare_aux[0] = '\0';
-
-    if(pwd_len >= path_len || strcmp(compare_aux, pwd) != 0)// not full path
     {
-        strcpy(temp.fullPath, pwd);
-        strcat(temp.fullPath, "/");
-    }
-    strcat(temp.fullPath, path);
+        char pwd[FULL_PATH_LENGHT];
+        if (getcwd(pwd, FULL_PATH_LENGHT) == NULL)
+        {
+            perror("couldn t get pwd");
+            exit(EXIT_FAILURE);
+        }
+        
+        int pwd_len = strlen(pwd);
+        char compare_aux[FULL_PATH_LENGHT];
+        if(pwd_len < path_len)
+        {
+            strncpy(compare_aux, path, pwd_len);
+            compare_aux[pwd_len] = '\0';
+        }
+        else
+            compare_aux[0] = '\0';
 
+        if(pwd_len >= path_len || strcmp(compare_aux, pwd) != 0)// not full path
+        {
+            strcpy(temp.fullPath, pwd);
+            strcat(temp.fullPath, "/");
+        }
+        strcat(temp.fullPath, path);
+    }
+
+    
     //from full path i get the name
     char *last_slash = strrchr(temp.fullPath, '/');
     strcpy(temp.fileName, last_slash);

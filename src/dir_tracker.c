@@ -172,12 +172,9 @@ void track(Path_DT father, char *CACHE_DIR, char *path_to_sh,  char *ISOLATED_SP
         int nr_of_read_bytes = read(son->read_int_pipe, response, FULL_PATH_LENGHT);
         response[nr_of_read_bytes - 1] = '\0';// -1 pt ca eu trimit "string\n"
         is_lt_zero(nr_of_read_bytes, "Error while communicating with sh trough pipe\n");
-            
-        // printf("RESPONSE: [%s]\nresp len=%ld\n", response, strlen(response));
-
+        
         if(strcmp(response, "SAFE") != 0)
         {
-            // printf("NSFW %s\n", name_file);
             char dest[FULL_PATH_LENGHT];
             strcpy(dest, ISOLATED_SPACE_DIR);
 
