@@ -23,9 +23,9 @@ This project was developed as part of an operating systems course at University 
 1. **Compilation:** Use `make` to compile the project. The Makefile provides the following targets:
    - `all`: Builds the entire project.
    - `clean`: Removes all compiled files and objects, cleaning the directory.
-2. **Execution Flags:** The program `filesaver.efl` accepts the following flags (case insensitive):
+2. **Execution Flags:** The program `filesaver.elf` accepts the following flags (case insensitive):
    - `-o/-O`: Marks the cache directory where snapshots of tracked directories will be saved. If not provided, defaults to "FileSaverCache".
-   - `-x/-X`: Marks the isolated space directory where malicious files will be moved. Must exist before running the program.
+   - `-x/-X`: Marks the isolated space directory where malicious files will be moved. Must exist before running the program. Defaults to "IsolatedSpaceDirectory".
    - `-s/-S`: Specifies the path to the verification shell script for identifying malicious files. Defaults to "verify_for_malicious.sh".
    - `-d/-D`: Followed by a list of directories as arguments for processing.
 

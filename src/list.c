@@ -33,7 +33,6 @@ void insert_data(Node **head, int read_int_pipe, int pid, const char* text)
     insert_node(head, node);
 }
 
-
 void free_list(Node **head)
 {
     Node *current = *head;

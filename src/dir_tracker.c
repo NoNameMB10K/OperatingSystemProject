@@ -163,7 +163,6 @@ void track(Path_DT father, char *CACHE_DIR, char *path_to_sh,  char *ISOLATED_SP
     int actual_viruses = 0;
     int processes_created = get_snapshot(father, 0, INDENT, &text, path_to_sh, ISOLATED_SPACE_DIR, &head_pipes_list);
     
-
     //read from pipes
     Node *son = head_pipes_list;
     while(son != NULL)
@@ -187,14 +186,8 @@ void track(Path_DT father, char *CACHE_DIR, char *path_to_sh,  char *ISOLATED_SP
             strcpy(name_file, last_slash);
             strcat(dest, name_file);
 
-            if (rename(response, dest) != 0) { 
-                if (remove(response) != 0) {
-                    perror("Error deleting original file");
-                    exit(EXIT_FAILURE);
-                }
-                perror("Error moving file");
-                exit(EXIT_FAILURE);
-            }
+            is_lt_zero(rename(response, dest), "Error at copying the file\n");
+            
             actual_viruses ++;
         }
         
@@ -212,7 +205,7 @@ void track(Path_DT father, char *CACHE_DIR, char *path_to_sh,  char *ISOLATED_SP
         finished_pid = wait(&return_code);
         if(WIFEXITED(return_code))
             if(WEXITSTATUS(return_code) != EXIT_SUCCESS)
-                printf("wait pid=%d: code=%d (not happy code)\n", finished_pid, WEXITSTATUS(return_code)); 
+                printf("Grandchild pid=%d: code=%d (error)\n", finished_pid, WEXITSTATUS(return_code)); 
     }
 
     char *loaded_text = NULL;

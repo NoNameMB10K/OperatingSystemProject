@@ -30,12 +30,10 @@ while read -n1 char; do
     fi
 done < "$path"
 
-while IFS= read -r word; do
-    if [[ "$word" == *"malicious"* || "$word" == *"risk"* || "$word" == *"attack"* ]]; then
-        echo "$path"
-        exit 0
-    fi
-done < <(tr -cs '[:alnum:]' '\n' < "$path")
+if grep -q -E '\b(malicious|risk|attack)\b' "$path"; then
+    echo "$path"
+    exit 0
+fi
 
 chmod 000 "$path"
 
