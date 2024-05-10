@@ -40,6 +40,12 @@ This project was developed as part of an operating systems course at University 
      ./filesaver.efl -d dir3
      ```
      This command processes `dir3` using default settings for cache directory, isolated space, and verification script.
+   - Example 3 (custom settings):
+     ```
+     ./filesaver.elf -d /home/alex/Desktop/So_remastered/test_dir -o /home/alex/Desktop/So_remastered/FileSaverCache -x /home/alex/Desktop/So_remastered/IsolatedSpaceDirectory -s verify_for_malicious.sh
+     ```
+     This command processes the directory `/home/alex/Desktop/So_remastered/test_dir`, saving snapshots in `/home/alex/Desktop/So_remastered/FileSaverCache`, moving malicious files to `/home/alex/Desktop/So_remastered/IsolatedSpaceDirectory`, and using `verify_for_malicious.sh` for verification.
+
 
 4. **Verification Script:**
    - The script `verify_for_malicious.sh` checks potentially malicious files.
