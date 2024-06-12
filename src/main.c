@@ -121,6 +121,7 @@ int main(int argc, char *argv[])
                     if(WEXITSTATUS(return_code) != EXIT_SUCCESS)
                         printf("Child wait pid=%d: code=%d (not successfuly)\n", finished_pid, WEXITSTATUS(return_code)); 
             }
+            live_processes = 0;
         }
     }
 

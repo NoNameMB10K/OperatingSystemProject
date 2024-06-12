@@ -220,6 +220,7 @@ void track(Path_DT father, char *CACHE_DIR, char *path_to_sh,  char *ISOLATED_SP
 
     free(loaded_text);
     free(text);
+    
 }
 
 
